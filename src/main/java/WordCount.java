@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import org.apache.hadoop.conf.Configuration;
@@ -23,7 +22,7 @@ public class WordCount {
         public void map(Object key, Text value, Context context)
                 throws IOException, InterruptedException {
             StringTokenizer itr = new StringTokenizer(value.toString());
-            while(itr.nextToken()) {
+            while(itr.hasMoreTokens()) {
                 word.set(itr.nextToken());
                 context.write(word, one);
             }
@@ -46,4 +45,18 @@ public class WordCount {
         }
     }
 
+
+    public static void main(String[] args) throws Exception{
+        Configuration conf = new Configuration();
+        Job job = new Job(conf, "Word Count");
+        job.setJarByClass(WordCount.class);
+        job.setMapperClass(TokenizerMapper.class);
+        job.setCombinerClass(IntSumReducer.class);
+        job.setReducerClass(IntSumReducer.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
 }
