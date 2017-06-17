@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import org.apache.hadoop.conf.Configuration;
@@ -26,6 +27,22 @@ public class WordCount {
                 word.set(itr.nextToken());
                 context.write(word, one);
             }
+        }
+    }
+
+
+    public static class IntSumReducer extends
+            Reducer<Text, IntWritable, Text, IntWritable> {
+        private IntWritable result = new IntWritable();
+        public void reduce(Text key, Iterable<IntWritable> values, Context context)
+            throws IOException, InterruptedException {
+            int sum = 0;
+            for(IntWritable value : values) {
+                sum += value.get();
+            }
+
+            result.set(sum);
+            context.write(key, result);
         }
     }
 
